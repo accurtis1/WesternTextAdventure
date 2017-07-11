@@ -14,8 +14,6 @@ public class Npc {
     	requirement.add(item);
     }
     
-    // pretty sure I'm gonna have most npcs only require
-    // one item, so this will do
     public boolean meetsRequirement() {
     	for (Item item : requirement) {
             if (Game.player.inventory.contains(item)) continue;
@@ -24,9 +22,7 @@ public class Npc {
     	return true;
     }
     
-    // in case the player bought all the guns from the arms dealer
-    // and is confused because they still don't have all the guns
-    // in the game (you can fish a BB gun out of the river lol)
+    // in case player did not find bb gun
     public boolean almostShady() {
 	for (Item item : requirement) {
 	    if (item == Game.bbGun) continue;
