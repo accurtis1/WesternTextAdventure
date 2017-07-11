@@ -1,89 +1,141 @@
 package gameStuff;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class River extends Room {
     String name;
-    Item item1;
-    Item item2;
-    Item item3;
-    int looked = 0;
     ArrayList<Item> items = new ArrayList<>();
-    int a = 3;
-    Random rand = new Random();
-    
-    // damn there's gotta be a better way to do this
-    public River(String name, int index, Item item1, Item item2, Item item3, Item item4) {
+    int success = 0;
+
+    public River(String name, int index) {
     	super(name, index);
-    	items.add(item1);
-    	items.add(item2);
-    	items.add(item3);
-    	items.add(item4);
     }
+    
+    
+    public void addItem(Item item) {
+    	items.add(item);
+    }
+    
+    
+    public void removeItem(Item item) {
+    	items.remove(item);
+    }
+    
+    
+    public Item getItem() {
+    	return items.get(0);
+    }
+    
     
     public String enter() {
     	System.out.println("After a short trek you stumble upon the River of Riches. The babble of"
-    		+ " the rushing stream whispers promises of gold hidden within.\nYou can take your"
-    		+ " chances and (p)an for gold or break out a pole and go (f)ishing.\nTo the (e)ast"
-    		+ " is the entrance to town.\n");
-    	
+    		+ " the rushing stream whispers promises of gold hidden within.\n"
+    		+ "You can take your chances and (p)an for gold or break out a pole and go (f)ishing.\n"
+    		+ "To the (e)ast is the entrance to town.\n");
+    	return choice();
+    }
+    
+    
+    public String choice() {
     	while (true) {
             String input = Game.in.nextLine();
             
-            if (Game.cons.contains(input))
+            if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
-            
-            else if (input.equals("l"))
-            	System.out.println("The glistening river flows freely, unencumbered by debris or unsightly"
-            	+ " garbage.\nSeveral townspeople are either fishing or panning for gold. Some wade in the"
-            	+ " water, washing off the hot summer day.\nThere aren't any items on the ground, but"
-            	+ " you can see hints of treasures galore in the water.\n");
-            
-            else if (input.equals("p")) {
-            	if (looked < 5) {
-            		System.out.println("You cross your fingers and place your pan in the water.");
-            		
-            		if (rand.nextInt(6) == 1)
-            			System.out.println("You bring up nothing of interest this time.\n");
-            		else {
-            			int floorGold = (int)(Math.random() * 25 + 5);
-            			System.out.println("Woohoo! You retrieve " + floorGold + " gold.\n");
-            			Game.player.gold += floorGold;
-            			looked++;
-            		}
-            	}
-            	else
-            		System.out.println("You try once more to no avail. You must've gotten it all.\n");
             }
             
-            else if (input.equals("f")) {
-            	if (items.size() > 0) {
-                    System.out.println("You cast your line in the river, hoping for the best.");
-                    
-                    if (rand.nextInt(2) == 1) {
-                    	int b = rand.nextInt(a + 1);
-                    	Item item = items.get(b);
-                    	System.out.printf("You catch a %s!%n%n", item.name);
-                    	Game.player.inventory.add(item);
-                    	items.remove(item);
-                    	a--;
-                    }
-                    else
-                    	System.out.println("Nothing this time, but you were so close!\n");
-            	}
-            	else
-            		System.out.println("You cast your line in the water but the effort is futile. The river seems eerily empty.\n");
+            switch(input) {
+            	case "l":
+                	look();
+                	break;
+            	case "p":
+            		pan();
+            		break;
+            	case "f":
+            		fish();
+            		break;
+            	case "e":
+            		return "entry";
+            	case "n":
+            	case "s":
+            	case "w":
+            		System.out.println(Game.wrongTurn);
+            		break;
+            	default:
+            		System.out.println(Game.no);
+            		break;
             }
-            
-            else if (input.equals("n") || input.equals("s") || input.equals("w"))
-            	System.out.println("Whoops, can't go that way.\n");
-            
-            else if (input.equals("e"))
-            	return "entry";
-            
-            else
-            	System.out.println("Not a valid response.\n");
     	}
+    }
+
+    
+    private void look() {
+    	System.out.println("The glistening river flows freely, unencumbered by debris or unsightly"
+            	+ " garbage.\n"
+            	+ "Several townspeople are either fishing or panning for gold. Some wade in the water, washing off the sweat of a hot summer day.\n"
+            	+ "There aren't any items on the ground, but you can see hints of treasures galore in the water.\n");
+    }
+    
+    private void pan() {
+    	if (success > 5) {
+    		System.out.println("You try once more to no avail. You must've gotten it all.\n");
+    	}
+    	else {
+    		System.out.println("You cross your fingers and place your pan in the water.");
+    		
+    		if (randomize()) {
+    			panSuccess();
+    		}
+    		else {
+    			System.out.println("You bring up nothing of interest this time.\n");
+    		}
+    	}
+    }
+    
+    private void panSuccess() {
+		int panGold = randomGold();
+		System.out.println("Woohoo! You retrieve " + panGold + " gold.\n");
+		Game.player.setGold(panGold);
+		success++;
+    }
+    
+    
+    private void fish() {
+    	if (items.size() == 0) {
+    		System.out.println("You cast your line in the water but the effort is futile. The river seems eerily empty.\n");
+    	}
+    	else {
+            System.out.println("You cast your line in the river, hoping for the best.");
+            
+            if (randomize()) {
+            	fishSuccess();
+            }
+            else {
+            	System.out.println("Nothing this time, but you were so close!\n");
+            }
+    	}
+    }
+    
+    private void fishSuccess() {
+    	Item item = getItem();
+    	System.out.printf("You catch a %s!%n%n", item.name);
+    	Game.player.addItem(item);
+    	removeItem(item);
+    }
+    
+    private boolean randomize() {
+    	int num = Game.random.nextInt(4);
+    	switch(num) {
+    		case 0:
+    		case 1:
+    			return true;
+    		default:
+    			return false;
+    	}
+    }
+    
+    private int randomGold() {
+    	int num = Game.random.nextInt(30);
+    	return num;
     }
 }

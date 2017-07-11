@@ -39,9 +39,12 @@ public class Game {
     //   content' or some bullshit
 	// give teleporter functionality
 	// 
-	// create a method to index the rooms recursively/something
-	//   instead of typing each of them out
-	// finish refactoring the player.heal function
+	// create a method to index the rooms recursively or something instead of typing each of them out
+	// ?create empty spaces in inventory via iteration?
+	// create getters/setters for items and their shit and fix everything
+	// PRIVATIZE everything's shit after getters and setters have been created
+	// make sure the indexing in the trade menus work correctly
+	
 	
 	
 	
@@ -51,8 +54,7 @@ public class Game {
 	//    - didn't think of starting a change log, but now I see its usefulness
 
 	// 04/04/2017
-	//    - attempted ideas for items (teleporter, medic kit, magic stone,
-	//      custom boots)
+	//    - attempted ideas for items (teleporter, medic kit, magic stone, custom boots)
 	//    - player wins boots on first cowboy kill
 	//    - boots decrease prices by 10%
 	//    - DRY practice w/ constants method in Player
@@ -61,16 +63,14 @@ public class Game {
 	//    - added 'fists' to cover issue of having no weapons
 	//    - TONS o' formatting changes
 	//    - started prisoner quest
-	//    - added 'rooms' to Game and 'index' to all Rooms
-	//      so map tells you where you're at
+	//    - added 'rooms' to Game and 'index' to Room so map shows location
 	//    - covered issue of player/merchant not having any items
 	//    - error exception handling for player.sellInv()
 
 	// 04/05/2017
 	//    - some prisoner quest stuff
 	//    - added 'teleporter' to item list and wizard inventory
-	//    - changed the conditions under which items show up in
-	//      sell menus to prevent irrelevant information
+	//    - changed the conditions under which items show up in sell menus to prevent irrelevant information
 	//    - removed erroneous border in inventory display
 
 	// 07/11/2017
@@ -82,8 +82,25 @@ public class Game {
 	//    - created addItem() for player and merchant
 	//    - created npc.addRequirement()
 	//    - created player.healingInventory
-	//    - started refactoring player.heal()
-	
+	//    - refactored player.heal()
+	// 	  - committed to GitHub!
+	//    - created player.getName()
+	//    - refactored player.constants() to switch instead of ifs
+	//    - created player.weapon
+	//    - refactored player.damage
+	//    - created player.setWeapon()
+	//    - created player.getWeapon()
+	//    - removed player.setDamage()
+	//    - removed player.getDamage()
+	//    - changed around function placement in Player
+	//    - tried private functions for the first time (!!!) with the healing methods in Player
+	//    - gigantic refactor to the trading feature
+	//    - like seriously ^that was ridiculous
+	//    - switched ALL of the room decision trees to switch statements!
+	//    - added static Strings for wrong turns and invalid responses!!!
+	//    - distributed functions in rooms instead of cramming everything into entry()
+	//    - actually basically just refactored the shit out of all the rooms
+	//    - refactored River's steaming pile of crap that I called a function
 	
 	
 	// --------- initializing ---------
@@ -95,10 +112,19 @@ public class Game {
     static ArrayList<String> rooms = new ArrayList<>();
     static Player player = new Player();
     
-    // constants used for context menus
+    // constants used for menus
     static String cons = "iqx?m";
+    // admission of guilt for bugs
+    // if anyone ever actually plays, the description that follows the 'oops' will help!
+    static String oops = "Uh oh, developer error!";
+    // I needed these so long ago
+    static String no = "Not a valid response.\n";
+    static String wrongTurn = "Whoops, can't go that way!\n";
 
-    Random random = new Random();
+    
+    
+    // does this work static?
+    static Random random = new Random();
     
     
     
@@ -159,10 +185,10 @@ public class Game {
 
     	//  ---------- rooms ----------
     	// name, index, items, merchants, npcs
-    	Entry entry = new Entry("entry", 0, 10);
+    	Entry entry = new Entry("entry", 0);
     	roomObjects.put("entry", entry);
     	rooms.add("Base of Wild Peaks");
-    	River river = new River("river", 1, redHerring, rubberDuck, kingMackerel, bbGun);
+    	River river = new River("river", 1);
     	roomObjects.put("river", river);
     	rooms.add("River of Riches");
     	TownSquare townSquare = new TownSquare("town square", 2, prisoner);
@@ -180,6 +206,13 @@ public class Game {
     	HiddenRoom hiddenRoom = new HiddenRoom("hidden room", 6);
     	roomObjects.put("hidden room", hiddenRoom);
     	rooms.add("??????");
+    	
+    	
+    	// ------ populating river ------
+    	river.addItem(redHerring);
+    	river.addItem(kingMackerel);
+    	river.addItem(rubberDuck);
+    	river.addItem(bbGun);
     	
     	//  ----- populating shops ------
     	armsDealer.addItem(pistol);
@@ -221,7 +254,7 @@ public class Game {
     		+ " quests to complete, and guns to upgrade.\nMaybe some day you could defeat"
     		+ " the boss cowboy and become the new leader of the town...");
     	player.setName();
-    	System.out.printf("Howdy %s!%n", player.name);
+    	System.out.printf("Howdy %s!%n", player.getName());
     	System.out.println("I see you're new to these here parts. Let me give you a run down.\n"
 		+ "Actions are simple; just type any letter in the (parentheses) to continue.\n");
     	player.help();
@@ -234,7 +267,7 @@ public class Game {
     	    	break;
     	    else if (input.equals("n")) {
     	    	System.out.printf("You know what %s? This town wasn't big enough for you anyway."
-    				+ " Don't let me catch you near these parts again!", player.name);
+    				+ " Don't let me catch you near these parts again!", player.getName());
         		System.exit(0);
     	    }
     		else
@@ -375,7 +408,7 @@ public class Game {
             	if (player.hp >= 100)
             		System.out.println("Your ticker is running just fine, no need to waste precious supplies!");
             	else
-            		player.healInv();
+            		player.heal();
             }
             else if (cons.contains(input))
             	Game.player.constants(input, 4);
@@ -471,79 +504,21 @@ public class Game {
     }
     
     
-    
-    
-    
-    // generic trade method that references either buy() or sell() below
-    // works better than having this method in every room's input
-    // 'if' statements
     public void trade(Merchant merchant) {
     	System.out.println("Would you like to (b)uy, (s)ell, or (c)ancel?\n");
-        int initM = merchant.inventory.size();
-        int initP = player.inventory.size();
-    
+        
     	while (true) {
             String choice = in.nextLine();
             
-            if (choice.equals("c"))
+            if (choice.equals("c")) {
+            	System.out.printf("You turn away from the %s and back to the room.%n", merchant.getName());
+            	System.out.println();
             	break;
-            else if (choice.equals("b"))
-            	buy(merchant);
-            else if (choice.equals("s"))
-            	sell(merchant);
-            else
-            	System.out.println("Not a valid response.\n");
+            }
+            merchant.trade(choice);
             break;
     	}
-    	
-    	if (merchant.inventory.size() > initM || player.inventory.size() > initP)
-    		System.out.printf("The %s thanks you for your patronage.%n%n", merchant.name);
     }
-    
-    
-    
-    
-    
-    
-    // generic buy method referencing the player's buy() method 
-    public void buy(Merchant merchant) {
-    	Item item = merchant.displayInv();
-    	
-    	if (item == null) {
-    		System.out.printf("You turn away from the %s and back to the room.%n%n", merchant.name);
-    		return;
-    	}
-    	else if (item.value > player.gold)
-    		System.out.println("Sorry, you can't afford that!\n");
-    	else
-    		player.buy(item, merchant);
-    }
-    
-    
-    
-    
-    
-    
-    // generic sell method referencing the player's sell() method
-    public void sell(Merchant merchant) {
-    	Item item = player.sellInv();
-    	
-    	if (item == null) {
-    		System.out.printf("You turn away from the %s and back to the room.%n%n", merchant.name);
-    		return;
-    	}
-    	else if (item.value > merchant.gold)
-    		System.out.printf("Sorry, the %s can't afford that!%n", merchant.name);
-    	else
-    		player.sell(item, merchant);
-    }
-    
-
-    
-    
-    
-    
-    
     
     
     
@@ -603,28 +578,19 @@ public class Game {
     	if (!shadyGuy.meetsRequirement()) {
     		System.out.println("The shady character checks your rucksack.\n'You don't have 'em all son!"
     				+ " Come back when your collection is complete.'");
-    		if (shadyGuy.almostShady()) System.out.println("There must be a gun somewhere that the arms dealer doesn't sell...");
+    		if (shadyGuy.almostShady()) {
+    			System.out.println("There must be a gun somewhere that the arms dealer doesn't sell...");
+    		}
     		System.out.println();
-	}
+    	}
     	
-    	if (shadyGuy.meetsRequirement()) {
+    	else {
     		System.out.println("'You got 'em!' he bellows. 'Now you're startin' to look like a real cowboy. I think you're"
     				+ " finally worthy of this...'\nHe walks to the counter and whispers something in the arms dealer's ear."
     				+ " The dealer smiles at you and hands you a key.\n'Alright partner, we only let the best of the best"
     				+ " take this chance, and you've proven yourself,' he says.\nDespite your awful confusion, you feel pretty"
-    				+ " proud. You now have access to the secret room in the Gun Shop. Would you like to go there now (y/n)?\n");
+    				+ " proud. You now have access to the (h)idden room in the Gun Shop.\n");
     		player.shadyComplete = true;
-		
-    		while (true) {
-    			String input = in.nextLine();
-			
-    			if (input.equals("y")) break;
-    			else if (input.equals("n")) {
-    				player.shadyActive = false;
-    				break;
-    			}
-    			else System.out.println("Not a vald response.\n");
-    		}
     	}
     }
     
@@ -649,11 +615,11 @@ public class Game {
     		System.out.println("The prisoner looks at you incredulously. 'What are you doing?' she whispers. 'We don't"
     				+ " have this kind of time! Go get that cloak!'\n");
     	if (prisoner.meetsRequirement()) {
-    		System.out.println("You throw the ");
+    		System.out.println("You throw the - bomb or somethng idk I started this sentence 3 months ago");
     	}
     }
     
     public void battleWagons() {
-    	
+    	// still not sure I"m gonna do this
     }
 }
