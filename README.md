@@ -55,10 +55,26 @@ This is the main file, which was a mistake in itself. I definitely should have m
   - good to be back!
   - refactored player.inventory and fixed a long-standing bug
   - refactored player.setDamage
-	- refactored player.getDamage
-	- refactored player.setName
-	- created addItem() for player and merchant
-	- created npc.addRequirement()
-	- created player.healingInventory
-	- started refactoring player.heal()
-  - **committed repository to GitHub!**
+  - refactored player.getDamage
+  - refactored player.setName
+  - created addItem() for player and merchant
+  - created npc.addRequirement()
+  - created player.healingInventory
+  - started refactoring player.heal()
+  - **committed to GitHub!**
+  - created player.getName()
+  - refactored player.constants() to switch instead of ifs
+  - created player.weapon
+  - refactored player.damage
+  - created player.weapon getter/setter
+  - removed player.damage getter/setter
+  - changed around function placement in Player
+  - tried private functions for the first time (!!!) with the healing methods in Player
+  - gigantic refactor to the trading feature
+  - like seriously ^that was ridiculous
+  - switched ALL of the room decision trees to switch statements!
+  - added static Strings for wrong turns and invalid responses!!!
+  - distributed functions in rooms instead of cramming everything into entry()
+  - actually basically just refactored the shit out of all the rooms
+  - refactored River's steaming pile of crap that was entry()
+Going to bed now. I've been working on this thing for 8 hours and have added 0 new features. I feel like experienced developers would get a chuckle out of the exasperation in that statement. Good night/morning.
