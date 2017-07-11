@@ -22,8 +22,8 @@ Alright, I'm done self deprecating. After taking a break from development for 3 
 
 If you see something you hate, like, want fixed, know how to fix, are interested in, are disgusted with, etc. I implore you to email me! I don't get very many outside opinions on my work (and zero detailed opinions or opinions on the code), so I would be insanely receptive to a discussion with you. Actually, the fact that you're reading this right now *really* makes me want to talk with you!
 
-#### Game
-This is the main file. It has a lot of unneccessary shit at the beginning, but those were just notes to myself at the time (didn't think I'd ever let anyone else read them). They'll be removed ~~*eventually*~~ and I'll start using this README as my change log instead. That's what I'm supposed to do, right?
+### Game.java
+This is the main file, which was a mistake in itself. I definitely should have made a separate **Main.java** to run it, and left the junk in Game. Oh well, live and learn. It also has a lot of unneccessary shit at the beginning, but those were just notes to myself at the time (didn't think I'd ever let anyone else read them). They'll be removed ~~*eventually*~~ and I'll start using this README as my change log instead. That's what I'm supposed to do, right?
 
 
 # Change log!
