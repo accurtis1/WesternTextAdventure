@@ -77,4 +77,5 @@ This is the main file, which was a mistake in itself. I definitely should have m
   - distributed functions in rooms instead of cramming everything into entry()
   - actually basically just refactored the shit out of all the rooms
   - refactored River's steaming pile of crap that was entry()
+  
 Going to bed now. I've been working on this thing for 8 hours and have added 0 new features. I feel like experienced developers would get a chuckle out of the exasperation in that statement. Good night/morning.
