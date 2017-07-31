@@ -3,6 +3,10 @@ A western adventure written in Java - a nice improvement from my previous games!
 
 It's actually a mash-up of the past two formats from my Prison Text Adventure and The Streets. It has the same general look as the Prison TA (multiple options to pick from) but it has the depth and scope of The Streets (without the confusing and finicky open-worldness!).
 
+Disclaimer: This is basically one of those "Oh I have some decent ideas for my skill level, let's make an awesome game!" 
+***6 months later***
+"I pray for the patience to finish this."
+
 
 ### Background
 As of this writing (7/11/2017), I'm about to start my:
@@ -79,3 +83,17 @@ This is the main file, which was a mistake in itself. I definitely should have m
   - refactored River's steaming pile of crap that was entry()
   
 Going to bed now. I've been working on this thing for 8 hours and have added 0 new features. I feel like experienced developers would get a chuckle out of the exasperation in that statement. Good night/morning.
+
+#### *07/31/2017*
+  - gold is displayed during a trade
+  - fixed error when a non-integer is chosen during trade
+  - fixed formatting for striking and fleeing a fight
+  - fixed returning to world after fight
+  - did a lot with how weapons are set
+  - added item.special
+  - removed item.special
+  - added player.sellingInventory
+  - an appearance by my friend ADD (lots of frivolous formatting)
+  - ruined formatting
+  - implemented hidden room functionality
+  - damn near finished shady quest
