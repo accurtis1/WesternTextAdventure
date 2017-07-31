@@ -9,6 +9,10 @@ public class River extends Room {
 
     public River(String name, int index) {
     	super(name, index);
+    	addItem(Game.rubberDuck);
+    	addItem(Game.kingMackerel);
+    	addItem(Game.redHerring);
+    	addItem(Game.bbGun);
     }
     
     
@@ -42,6 +46,7 @@ public class River extends Room {
             
             if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
+            	return choice();
             }
             
             switch(input) {
@@ -65,6 +70,7 @@ public class River extends Room {
             		System.out.println(Game.no);
             		break;
             }
+            return choice();
     	}
     }
 
@@ -79,14 +85,12 @@ public class River extends Room {
     private void pan() {
     	if (success > 5) {
     		System.out.println("You try once more to no avail. You must've gotten it all.\n");
-    	}
-    	else {
+    	} else {
     		System.out.println("You cross your fingers and place your pan in the water.");
     		
     		if (randomize()) {
     			panSuccess();
-    		}
-    		else {
+    		} else {
     			System.out.println("You bring up nothing of interest this time.\n");
     		}
     	}
@@ -103,14 +107,12 @@ public class River extends Room {
     private void fish() {
     	if (items.size() == 0) {
     		System.out.println("You cast your line in the water but the effort is futile. The river seems eerily empty.\n");
-    	}
-    	else {
+    	} else {
             System.out.println("You cast your line in the river, hoping for the best.");
             
             if (randomize()) {
             	fishSuccess();
-            }
-            else {
+            } else {
             	System.out.println("Nothing this time, but you were so close!\n");
             }
     	}
@@ -135,7 +137,7 @@ public class River extends Room {
     }
     
     private int randomGold() {
-    	int num = Game.random.nextInt(30);
+    	int num = Game.random.nextInt(20);
     	return num;
     }
 }

@@ -30,9 +30,12 @@ public class Apothecary extends Room {
     private String choice() {
     	while (true) {
             String input = Game.in.nextLine();
+            
             if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
+            	return choice();
             }
+            
             switch(input) {
             	
             	case "l":
@@ -56,6 +59,7 @@ public class Apothecary extends Room {
             		System.out.println(Game.no);
             		break;
             }
+            return choice();
     	}
     }
     

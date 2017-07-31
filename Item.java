@@ -5,6 +5,7 @@ public class Item {
     int value;
     int damage;
     int heal;
+    boolean special;
     
     public Item(String name, int value, int damage, int heal) {
     	this.name = name;

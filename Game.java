@@ -1,6 +1,7 @@
 package gameStuff;
 
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,24 +28,14 @@ public class Game {
 	
     // TASKS:
 	// ~~~~~set gold to 0~~~~~
-    // do everything in HiddenRoom
-    // write methods in GunShop for shady guy
     // write quest methods in game
     // implement the rest of the npcs/quests
     // select requirement? for prisoner quest
     // implement crazy item for winning
 	// FORMATTING/REFACTORING DAMNIT
-    // fix entry messages for command clarity
-    // saloon say 'fight as many cowboys to your heart's
-    //   content' or some bullshit
 	// give teleporter functionality
-	// 
-	// create a method to index the rooms recursively or something instead of typing each of them out
-	// ?create empty spaces in inventory via iteration?
-	// create getters/setters for items and their shit and fix everything
-	// PRIVATIZE everything's shit after getters and setters have been created
-	// make sure the indexing in the trade menus work correctly
-	
+	// write prompts for shadyguy
+	// and the rest of the quests while you're at it
 	
 	
 	
@@ -88,10 +79,8 @@ public class Game {
 	//    - refactored player.constants() to switch instead of ifs
 	//    - created player.weapon
 	//    - refactored player.damage
-	//    - created player.setWeapon()
-	//    - created player.getWeapon()
-	//    - removed player.setDamage()
-	//    - removed player.getDamage()
+	//    - created player.weapon getter/setter
+	//    - removed player.damage getter/setter
 	//    - changed around function placement in Player
 	//    - tried private functions for the first time (!!!) with the healing methods in Player
 	//    - gigantic refactor to the trading feature
@@ -100,17 +89,30 @@ public class Game {
 	//    - added static Strings for wrong turns and invalid responses!!!
 	//    - distributed functions in rooms instead of cramming everything into entry()
 	//    - actually basically just refactored the shit out of all the rooms
-	//    - refactored River's steaming pile of crap that I called a function
+	//    - refactored River's steaming pile of crap that was entry()
+	
+	// 07/12/2017
+	//    - I think I fixed most of the trade bugs
+	//    - basically refactored the entirety of Game
+	
+	// 07/31/2017
+	//    - gold is displayed during a trade
+	//    - fixed error when a non-integer is chosen during trade
+	//    - fixed formatting for striking and fleeing a fight
+	//    - fixed returning to world after fight
+	//    - did a lot with how weapons are set
+	//    - added item.special
+	//    - removed item.special
+	//    - added player.sellingInventory
+	//    - my ADD kicked in, lots of frivolous formatting
+	//    - ruined formatting
+	//    - implemented hidden room functionality
+	//    - damn near finished shady quest
+	
 	
 	
 	// --------- initializing ---------
     static Scanner in = new Scanner(System.in);
-    
-    static HashMap<String, Room> roomObjects = new HashMap<>();
-    static ArrayList<Item> items = new ArrayList<>();
-    // used to index rooms for the map
-    static ArrayList<String> rooms = new ArrayList<>();
-    static Player player = new Player();
     
     // constants used for menus
     static String cons = "iqx?m";
@@ -120,16 +122,19 @@ public class Game {
     // I needed these so long ago
     static String no = "Not a valid response.\n";
     static String wrongTurn = "Whoops, can't go that way!\n";
-
     
+    static HashMap<String, Room> roomObjects = new HashMap<>();
+    static ArrayList<Item> items = new ArrayList<>();
+    // used to index rooms for the map
+    static ArrayList<String> rooms = new ArrayList<>();
     
-    // does this work static?
+    // used for rolls throughout game
     static Random random = new Random();
     
+    private static int numOfRooms = 0;
     
     
-    
-    //  --------- items (name, value, damage, hp) ---------
+    //  --------- items (name, value, damage, heal) ---------
     // weapons
     static Item fists = new Item("fists", 0, 1, 0);
     static Item pelletGun = new Item("pellet gun", 10, 2, 0);
@@ -151,15 +156,11 @@ public class Game {
     static Item teleporter = new Item("teleporter", 100, 0, 0);
     
     
-    
-    
     //  -------- merchants -------
     // name, gold
     static Merchant bartender = new Merchant("bartender", 100);
     static Merchant wizard = new Merchant("wizard", 200);
     static Merchant armsDealer = new Merchant("arms dealer", 300);
-    
-    
     
     
     //  -------- enemies ----------
@@ -170,50 +171,42 @@ public class Game {
     static Enemy boss = new Enemy("the baddest outlaw", 0, 50, 15);
     
     
-    
-    
     //  --------- npcs ---------
     static Npc shadyGuy = new Npc("shady guy");
     static Npc dwarf = new Npc("dwarf");
     static Npc prisoner = new Npc("prisoner");
+
     
-    
-    
-    
+    //  -------- player! --------
+    static Player player = new Player();
+
     
     public static void main(String[] args) {	
-
     	//  ---------- rooms ----------
     	// name, index, items, merchants, npcs
-    	Entry entry = new Entry("entry", 0);
+    	Entry entry = new Entry("entry", roomIndex());
     	roomObjects.put("entry", entry);
     	rooms.add("Base of Wild Peaks");
-    	River river = new River("river", 1);
+    	River river = new River("river", roomIndex());
     	roomObjects.put("river", river);
     	rooms.add("River of Riches");
-    	TownSquare townSquare = new TownSquare("town square", 2, prisoner);
+    	TownSquare townSquare = new TownSquare("town square", roomIndex(), prisoner);
     	roomObjects.put("town square", townSquare);
     	rooms.add("Town Square");
-    	GunShop gunShop = new GunShop("gun shop", 3, armsDealer, shadyGuy);
+    	GunShop gunShop = new GunShop("gun shop", roomIndex(), armsDealer, shadyGuy);
     	roomObjects.put("gun shop", gunShop);
     	rooms.add("Gun Shop");
-    	Saloon saloon = new Saloon("saloon", 4, bartender);
+    	Saloon saloon = new Saloon("saloon", roomIndex(), bartender);
     	roomObjects.put("saloon", saloon);
     	rooms.add("Saloon");
-    	Apothecary apothecary = new Apothecary("apothecary", 5, wizard, dwarf);
+    	Apothecary apothecary = new Apothecary("apothecary", roomIndex(), wizard, dwarf);
     	roomObjects.put("apothecary", apothecary);
     	rooms.add("Apothecary");
-    	HiddenRoom hiddenRoom = new HiddenRoom("hidden room", 6);
+    	HiddenRoom hiddenRoom = new HiddenRoom("hidden room", roomIndex());
     	roomObjects.put("hidden room", hiddenRoom);
     	rooms.add("??????");
     	
-    	
-    	// ------ populating river ------
-    	river.addItem(redHerring);
-    	river.addItem(kingMackerel);
-    	river.addItem(rubberDuck);
-    	river.addItem(bbGun);
-    	
+    
     	//  ----- populating shops ------
     	armsDealer.addItem(pistol);
     	armsDealer.addItem(revolver);
@@ -227,25 +220,14 @@ public class Game {
     	
     	
     	//  ------ populating npcs ------
-    	shadyGuy.requirement.add(pelletGun);
-    	shadyGuy.requirement.add(pistol);
-    	shadyGuy.requirement.add(revolver);
-    	shadyGuy.requirement.add(rifle);
-    	shadyGuy.requirement.add(shotgun);
-    	shadyGuy.requirement.add(bbGun);
+    	shadyGuy.addRequirement(pelletGun);
+    	shadyGuy.addRequirement(pistol);
+    	shadyGuy.addRequirement(revolver);
+    	shadyGuy.addRequirement(rifle);
+    	shadyGuy.addRequirement(shotgun);
+    	shadyGuy.addRequirement(bbGun);
     	
     	dwarf.addRequirement(kingMackerel);
-    	
-    	
-    	//  --- the trusty pellet gun! ---
-    	player.addItem(pelletGun);
-    	
-    	
-    	
-    	
-    	
-    	
-    	
     	
     	
     	//  ------ AND SO IT BEGINS -------
@@ -258,20 +240,23 @@ public class Game {
     	System.out.println("I see you're new to these here parts. Let me give you a run down.\n"
 		+ "Actions are simple; just type any letter in the (parentheses) to continue.\n");
     	player.help();
-    	System.out.println("Are ya ready to have a hog-killin' time (y/n)?\n");
+    	System.out.println("Are you ready to have a hog-killin' time (y/n)?\n");
     	
     	while (true) {
     	    String input = in.nextLine();
     	    
-    	    if (input.equals("y"))
-    	    	break;
-    	    else if (input.equals("n")) {
-    	    	System.out.printf("You know what %s? This town wasn't big enough for you anyway."
-    				+ " Don't let me catch you near these parts again!", player.getName());
-        		System.exit(0);
+    	    switch(input) {
+    	    	case "y":
+    	    		break;
+    	    	case "n":
+    	    		System.out.printf("You know what %s? This town wasn't big enough for you anyway."
+    	    				+ " Don't let me catch you near these parts again!", player.getName());
+    	        	System.exit(0);
+    	        default:
+    	        	System.out.println(Game.no);
+    	        	continue;
     	    }
-    		else
-    			System.out.println("Not a valid response.\n");
+    	    break;
     	}
     	
     	// Time to play!
@@ -292,289 +277,309 @@ public class Game {
     
     //  ----------- METHODS -----------
     
+    
+    private static int roomIndex() {
+    	return numOfRooms++;
+    }
+    
+    
+    public void delay(int num) {
+    	try {
+    		TimeUnit.MILLISECONDS.sleep(num);
+    	} catch (Exception e) {
+    		System.out.println(Game.oops);
+    		System.out.println("I tried to make this dramatic!");
+    	}
+    }
+    
+    
     public String enemySelection(String input) {
     	
     	if (input.equals("f")) {
-            int a = random.nextInt(3);
-            
-            if (a == 1) {
-            	attackPlayer(hard);
-            	System.out.println("You walk away from the fight, rather dazed, and try to orient yourself.");
-            }
-            else if (a == 2) {
-            	attackPlayer(medium);
-            	System.out.println("Your adrenaline is still pumping despite being out of harm's way. You were made to be an outlaw!");
-            }
-            else {
-            	attackPlayer(easy);
-            	System.out.println("You're nearly laughing as you strut away. That guy was a joke.");
-            }
+            regularEnemy();
+    	} else if (input.equals("o")) {
+    		bossEnemy();
     	}
-    	else if (input.equals("o")) {
-            attackPlayer(boss);
-            if (player.won)
-            	return "saloon";
-            System.out.println("Your heart is fluttering like a jackrabbit in the August heat. You can't believe you escaped with your life!");
-    	}
-    	
-    	System.out.println("From here you can either return to the (s)aloon or go south to the (t)own square.\n");
-    	
-    	while (true) {
-            String d = in.nextLine();
-            
-            if (d.equals("s"))
-            	return "saloon";
-            else if (d.equals("t"))
-            	return "town square";
-            else 
-            	System.out.println("Please either return to the (s)aloon or go to the (t)own square.\n");
-    	}
+    	return goBack();
     }
     
     
+    public void regularEnemy() {
+    	int roll = random.nextInt(2);
+        
+        switch(roll) {
+        	case 0:
+        		attackPlayer(easy);
+        		System.out.println(player.easyDefeat);
+        		break;
+        	case 1:
+        		attackPlayer(medium);
+        		System.out.println(player.mediumDefeat);
+        		break;
+        	case 2:
+        		attackPlayer(hard);
+        		System.out.println(player.hardDefeat);
+        		break;
+        	default:
+        		System.out.println(Game.oops);
+        		System.out.println("I tried to switch up your enemy selection! Pun intended.");
+        		break;
+        }
+    }
     
     
+    public void bossEnemy() {
+        attackPlayer(boss);
+        if (player.getWon()) {
+        	return;
+        }
+        System.out.println(player.bossFlee);
+    }
     
     
-    
-    // fight method that I probably need to refactor but it works for now
-    // I wanted it to be completely random whether the player or enemy gets hit instead of having
-    // the two damages face off and whoever's was highest got to attack the other. I also changed
-    // the enemy's damage so that it spans a smaller but higher range (i.e. 7-10 instead of 1-10)
     public void attackPlayer(Enemy enemy) {
-    	
-    	// needed to determine player's best weapon and therefore damage
-    	player.getDamage();
+
     	System.out.printf("You and %s step outside the saloon, ready for a shootout.%n", enemy.name);
-    	// I had to do this so the hp would reset every time, otherwise the cowboy stays dead,
-    	// and I wanted replayability so you can make money this way (even though it's very
-    	// boring and - for all intents and purposes - has no true replayability)
-    	int hp = enemy.hp;
     	
-    	while (player.hp > 0 && hp > 0) {
+    	while (player.getHp() > 0 && enemy.getHp() > 0) {
+            int damage = random.nextInt(enemy.getDamage()) + 1;
+            int roll = random.nextInt(4);
+            
             System.out.println("Do you want to (s)trike, (f)lee, or (h)eal?\n");
             String input = in.nextLine();
             
-            int edam = (int) (Math.random() * enemy.damage + (enemy.damage - 3));
-            int rand = random.nextInt(5);
-            // boolean found (for special items)
-            
-            // ------- strike --------
-            if (input.equals("s")) {
-            	System.out.printf("You and %s draw your weapons and fire your shots.%n", enemy.name);
-            	
-            	// for item in player inventory       // or inventory contains item/element/whatever??
-            	// if item in inventory - battle consequences
-            	// item found
-            	// remove item -or- uses/turns +1
-            	// else pass
-            	
-            	if (rand == 0 || rand == 1) {
-            		hp -= player.damage;
-            		System.out.printf("You hit him! -%d HP%nRemaining enemy HP: %d%n", player.damage, Math.max(0, hp));
-            	}
-            	else if (rand == 2 || rand == 3) {
-            		player.hp -= edam;
-            		System.out.printf("You've been hit! -%d HP%nRemaining HP: %d%n", edam, Math.max(0, player.hp));
-            	}
-            	else
-            		System.out.println("You both fire your weapons but the bullets bite the dust.");
+            if (cons.contains(input)) {
+            	player.constants(input, 4);
             }
             
-            // -------- flee ---------
-            else if (input.equals("f")) {
-            	System.out.println("You attempt to scurry away...");
-            	
-            	if (rand == 0 || rand == 1)
-            		System.out.printf("Your competitor fires at you and just barely misses.%n", enemy.name);
-            	else if (rand == 2 || rand == 3) {
-            		player.hp -= edam;
-            		System.out.printf("Your adversary shoots wildly and without abandon, grazing your side.%n-%d HP%nHP remaining: %d%n", edam, Math.max(0, player.hp));
-            	}
-            	else
-            		System.out.println("As you turn your back to flee you nearly jump out of your socks - your rival just shot a bullet straight through your hat! Talk about a hat trick!");
-            	break;
+            // *IMPLEMENT* boolean found (for special items)
+            
+            switch(input) {
+            	case "s":
+            		strikeEnemy(enemy, damage, roll);
+            		continue;
+            	case "f":
+            		fleeEnemy(enemy, damage, roll);
+            		break;
+            	case "h":
+            		healPlayer();
+            		continue;
             }
-            
-            
-            //
-            
-            //
-            
-            //
-            
-            // -------- heal ---------
-            else if (input.equals("h")) {
-            	if (player.hp >= 100)
-            		System.out.println("Your ticker is running just fine, no need to waste precious supplies!");
-            	else
-            		player.heal();
-            }
-            else if (cons.contains(input))
-            	Game.player.constants(input, 4);
-            else
-            	System.out.println("Not a valid response.");
+            break;
     	}
     	
-    		//
     	
-    		//
+    	if (player.getHp() <= 0) {
+    		playerDeath();
+    		return;
+    	} else if (enemy.getHp() > 0) {
+    		return;
+    	} else {
+    		enemyDeath(enemy);
+    	}
+    }
+    
     	
-    		//
+	public void strikeEnemy(Enemy enemy, int damage, int roll) {
+		System.out.printf("You and %s draw your weapons and fire your shots.%n", enemy.getName());
+		delay(1000);
+		
+    	// *IMPLEMENT*
+    	// for item in player inventory       // or inventory contains item/element/whatever??
+    	// if item in inventory - battle consequences
+    	// item found
+    	// remove item -or- uses/turns +1
+    	// else pass
+		
+    	switch(roll) {
+    		case 0:
+    		case 1:
+    			enemy.setHp(-player.getDamage());
+    			System.out.printf("You hit him! -%d HP%n"
+    					+ "Enemy HP: %d%n", player.getDamage(), Math.max(0, enemy.getHp()));
+    			break;
+    		case 2:
+    		case 3:
+    			player.setHp(-damage);
+    			System.out.printf("You've been hit! -%d HP%n"
+    					+ "Remaining HP: %d%n", damage, Math.max(0, player.getHp()));
+    			break;
+    		default:
+    			System.out.println(player.strikeNull);
+    			break;
+    	}
+    }
+            
+            
+	public void fleeEnemy(Enemy enemy, int damage, int roll) {
+    	System.out.println("You attempt to scurry away...");
     	
-    		//
+       	switch(roll) {
+    		case 0:
+    		case 1:
+    			System.out.printf("Your adversary fires at you and just barely misses.%n", enemy.getName());
+    			break;
+    		case 2:
+    		case 3:
+    			player.setHp(-damage);
+    			System.out.printf("Your adversary shoots wildly and without abandon, grazing your side. -%d HP%nRemaining HP: %d%n", damage, Math.max(0, player.getHp()));
+    			break;
+    		default:
+    			System.out.println(player.fleeNull);
+    			break;
+    	}
+	}
+            
+
+	public void healPlayer() {
+		player.heal();
+	}
+
+    
+	public void playerDeath() {
+		System.out.println(player.deathMessage);
+		// ^ asks to continue
+        while (true) {
+        	String live = in.nextLine();
+        	
+        	switch(live) {
+        		case "n":
+        			System.out.println("See ya partner!");
+        			System.exit(0);
+        		case "y":
+        			System.out.println("Here we go!");
+        			player.setHp(100 - player.getHp());
+        			break;
+        		default:
+        			System.out.println(Game.no);
+        			break;
+        	}
+        }
+	}
     	
-    	// ------- player death --------
-    	if (player.hp <= 0) {
-            System.out.println("\nAlas, it seems the Wild West got the best of you this time...\nIsn't death a bitch? Would you like to be resurrected (y/n)?\n");
-            while (true) {
-            	String die = in.nextLine();
-            	
-            	if (die.equals("n")) {
+	
+	public void enemyDeath(Enemy enemy) {
+		if (enemy == boss) {
+			bossDeath();
+		} else {
+			System.out.printf("You emerge victorious! You take %d gold from the cowboy's pockets.%n", enemy.getGold());
+			player.setGold(enemy.getGold());
+			
+			if (!player.getFought()) {
+                System.out.println(player.bootsMessage);
+                player.setFought(true);
+                player.addItem(customBoots);
+                player.activateBoots();
+			}
+			enemy.setHp(100 - enemy.getHp());
+		}
+	}
+    
+
+	public void bossDeath() {
+		System.out.println("You emerge victorious! Congratulations,"
+    			+ " you're the toughest sharpshooter in the Old West!\n"
+    			+ "You go down in history as the most fearsome fighter that"
+    			+ " has ever graced these dirt roads. Yee haw!");
+    	System.out.println("Would you like to continue playing (y/n)?\n");
+    	
+    	while (true) {
+            String keepGoing = in.nextLine();
+            
+            switch(keepGoing) {
+            	case "y":
+            		
+            		// *IMPLEMENT* Some crazy you-win item. Teleporter??
+            		
+            		System.out.println("You turn back to the saloon, keen on keeping the adventure alive.");
+            		player.setWon(true);
+            		break;
+            	case "n":
             		System.out.println("See ya partner!");
             		System.exit(0);
-            	}
-            	else if (die.equals("y")) {
-            		System.out.println("Here we go!");
-            		player.hp = 100;
-            		break;
-            	}
-            	else
-            		System.out.println("Not a valid response.\n");
+            	default:
+            		System.out.println(Game.no);
+            		continue;
             }
+            break;
     	}
+	}
+	
+	
+	public String goBack() {
+		System.out.println("From here you can either return to the (s)aloon or go south to the (t)own square.\n");
     	
-    	// ------- player victory --------
-    	else if (hp <= 0) {
-    		// --------- boss victory --------
-            if (enemy == boss) {
-            	System.out.println("You emerge victorious! Congratulations,"
-            			+ " you're the toughest sharpshooter in the Old West!\n"
-            			+ "You go down in history as the most fearsome fighter that"
-            			+ " has ever graced these dirt roads. Yee haw!");
-            	System.out.println("Would you like to continue playing (y/n)?\n");
-            	
-            	while (true) {
-                    String p = in.nextLine();
-                    
-                    if (p.equals("y")) {
-                    	
-                    	// give player some crazy item here
-                    	
-                    	System.out.println("You turn back to the saloon, keen on keeping the adventure alive.");
-                    	player.won = true;
-                    	break;
-                    }
-                    else if (p.equals("n"))
-                    	player.exit();
-                    else
-                    	System.out.println("Not a valid response.\n");
-            	}
-            }
-            // -------- regular victory ---------
-            else {
-            	System.out.printf("You emerge victorious! You take %d gold from the cowboy's pockets.%n", enemy.gold);
-            	player.gold += enemy.gold;
-            	if (!player.fought) {
-                    System.out.println("\nYou can't help but notice that the now-incapacitated cowboy has some real fancy boots"
-                    		+ " on them feet...\nYou try them on and - lo and behold - they fit!!\nCustom boots added to inventory"
-                    		+ " -- all prices lowered by 10%\n");
-                    player.fought = true;
-                    player.addItem(customBoots);
-                    boots();
-            	}
+    	while (true) {
+            String decision = in.nextLine();
+            
+            switch(decision) {
+            	case "s":
+            		return "saloon";
+            	case "t":
+            		return "town square";
+            	default:
+            		System.out.println("Please either return to the (s)aloon or go to the (t)own square.\n");
+            		break;
             }
     	}
-    }
-    
-    
-    
-    
-    
-    // one-time method used when the player acquires the custom boots
-    // I could've prob just put this up there ^^ in the code block
-    // where the player gets the boots...but it seemed appropriate to
-    // separate it
-    public void boots() {
-    	for (Item item : items) {
-    		// this way it doesn't decrease the value of an item the player already bought
-    		if (!player.inventory.contains(item))
-    			item.value = (int) (item.value * 0.9);
-    	}
-    }
+	}
     
     
     public void trade(Merchant merchant) {
-    	System.out.println("Would you like to (b)uy, (s)ell, or (c)ancel?\n");
-        
-    	while (true) {
-            String choice = in.nextLine();
-            
-            if (choice.equals("c")) {
-            	System.out.printf("You turn away from the %s and back to the room.%n", merchant.getName());
-            	System.out.println();
-            	break;
-            }
-            merchant.trade(choice);
-            break;
-    	}
+    	merchant.trade();
     }
-    
-    
     
 
     //  ----------- QUESTS ---------------
     
     // it would've been too boring to have a cookie-cutter quest method,
-    // and I don't want each room w/ an NPC to be cluttered up with all the
+    // and I don't want each room file w/ an NPC to be cluttered up with all the
     // dialogue and shit, so each NPC will have their own quest method here
 
     public void questSelection(Npc npc) {
-	if (npc == shadyGuy)
-		System.out.println("The shady guy says something to you about how he wants"
-		    + " a bunch of guns.");
-	else if (npc == dwarf)
-		System.out.println("The dwarf says something to you about mercury from a"
-		    + " rare fish for a philosopher's stone.");
-	else if (npc == prisoner)
-		System.out.println("The prisoner begs you for help. Idk what she did or what"
-		    + " she needs yet but w/e");
-	
-	System.out.println("Do you accept this quest (y/n)?\n");
-	
-	while (true) {
-	    String input = in.nextLine();
-	    
-	    if (input.equals("y")) {
-	    	if (npc == shadyGuy) {
-	    		player.shadyActive = true;
-	    		shadyQuest();
-	    	}
-	    	else if (npc == dwarf) {
-	    		player.dwarfActive = true;
-	    		dwarfQuest();
-	    	}
-	    	else if (npc == prisoner) {
-	    		player.prisonerActive = true;
-	    		prisonerQuest();
-	    	}
-	    	break;
-	    }
-	    else if (input.equals("n")) {
-	        System.out.println("You politely decline and return to your business.\n");
-	        break;
-	    }
-	    else
-	    	System.out.println("Not a valid response.\n");
-	    }
+		if (npc == shadyGuy) {
+			System.out.println(player.shadyStart);
+			//System.out.println(player.questQuestion);
+			//if (questAnswer()) {
+			//	player.setShadyActive(true);
+			//}
+		} else if (npc == dwarf) {
+			System.out.println(player.dwarfStart);
+		} else if (npc == prisoner) {
+			System.out.println(player.prisonerStart);
+		}
+		
+		System.out.println("Do you accept this quest (y/n)?\n");
+		
+		while (true) {
+		    String input = in.nextLine();
+		    
+		    if (input.equals("y")) {
+		    	if (npc == shadyGuy) {
+		    		player.setShadyActive(true);
+		    		shadyQuest();
+		    	} else if (npc == dwarf) {
+		    		player.setDwarfActive(true);
+		    		dwarfQuest();
+		    	} else if (npc == prisoner) {
+		    		player.setPrisonerActive(true);
+		    		prisonerQuest();
+		    	}
+		    	break;
+		    } else if (input.equals("n")) {
+		        System.out.println(player.questDecline);
+		        break;
+		    } else
+		    	System.out.println("Not a valid response.\n");
+		    }
     }
     
     
+    // public void questAccept(Npc npc)
     
     
     
-    
-    public void shadyQuest() {
+    	public void shadyQuest() {
     	if (!shadyGuy.meetsRequirement()) {
     		System.out.println("The shady character checks your rucksack.\n'You don't have 'em all son!"
     				+ " Come back when your collection is complete.'");
@@ -582,15 +587,13 @@ public class Game {
     			System.out.println("There must be a gun somewhere that the arms dealer doesn't sell...");
     		}
     		System.out.println();
-    	}
-    	
-    	else {
-    		System.out.println("'You got 'em!' he bellows. 'Now you're startin' to look like a real cowboy. I think you're"
-    				+ " finally worthy of this...'\nHe walks to the counter and whispers something in the arms dealer's ear."
-    				+ " The dealer smiles at you and hands you a key.\n'Alright partner, we only let the best of the best"
-    				+ " take this chance, and you've proven yourself,' he says.\nDespite your awful confusion, you feel pretty"
-    				+ " proud. You now have access to the (h)idden room in the Gun Shop.\n");
-    		player.shadyComplete = true;
+    	} else {
+    		System.out.println("'You got 'em!' he bellows. 'Now you're startin' to look like a real cowboy.'\n"
+    				+ "He walks to the counter and whispers something in the arms dealer's ear. The dealer smiles at you and hands you a key.\n"
+    				+ "'Alright partner, we only let the best of the best take this chance, and you've proven yourself,' he says.\n"
+    				+ "Despite your awful confusion, the flattery feels pretty good.\n"
+    				+ "You now have access to the (h)idden room in the Gun Shop.\n");
+    		player.setShadyComplete(true);
     	}
     }
     

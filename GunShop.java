@@ -16,14 +16,15 @@ public class GunShop extends Room {
     
     
     public String enter() {
-    	System.out.println("A well-stocked gun shop sits before you, ripe for the picking."
-    		+ " That is, if you have the gold.\n"
-    		+ "An arms dealer stands behind the counter, eager to (t)rade with you.\n"
-    		+ "Mention weird shady guy in the corner idk what (p)ucking letter to use.");
-    	if (Game.player.shadyComplete) {
-    		System.out.println("now you can see the (h)idden room.");
+    	System.out.println("A well-stocked gun shop sits before you, ripe for the picking. That is, if you have the gold.\n"
+    		+ "An arms dealer stands behind the counter, eager to (t)rade with you.");
+    	if (Game.player.getShadyComplete()) {
+    		System.out.println("The shady man is furiously explaining something to a teeny tiny cowboy in the corner.\n"
+    				+ "Behind the arms dealer lies the door to the (h)idden room.");
+    	} else {
+    		System.out.println("You overhear a strange, shady-looking man in the corner mumbling about his lack of (g)uns.");
     	}
-    	System.out.println("The exit back to the Town Square is to the (e)ast.\n");
+    	System.out.println("The exit for the Town Square is to the (e)ast.\n");
     	return choice();
     }
     
@@ -34,6 +35,7 @@ public class GunShop extends Room {
             
             if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
+            	return choice();
             }
             
             switch(input) {
@@ -43,11 +45,11 @@ public class GunShop extends Room {
             	case "t":
             		game.trade(Game.armsDealer);
             		break;
-            	case "p":
+            	case "g":
                 	shady();
                 	break;
             	case "h":
-            		if (Game.player.shadyComplete) {
+            		if (Game.player.getShadyComplete()) {
             			return "hidden room";
             		}
             		else {
@@ -65,6 +67,7 @@ public class GunShop extends Room {
             		System.out.println(Game.no);
             		break;
             }
+            return choice();
     	}
     }
     
@@ -78,14 +81,12 @@ public class GunShop extends Room {
     
     
     private void shady() {
-    	if (Game.player.shadyComplete) {
+    	if (Game.player.getShadyComplete()) {
     		System.out.println("The shady guy is busy with a business deal and ignores you.\n");
-    	}
-    	else {
-    		if (Game.player.shadyActive) {
+    	} else {
+    		if (Game.player.getShadyActive()) {
     			game.shadyQuest();
-    		}
-    		else {
+    		} else {
     			game.questSelection(Game.shadyGuy);
     		}
     	}

@@ -26,6 +26,7 @@ public class Entry extends Room {
             
             if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
+            	return choice();
             }
             
             switch(input) {
@@ -47,6 +48,7 @@ public class Entry extends Room {
             		System.out.println(Game.no);
             		break;
             }
+            return choice();
     	}
     }
     

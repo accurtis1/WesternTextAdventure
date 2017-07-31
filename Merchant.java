@@ -36,8 +36,7 @@ public class Merchant {
     public void removeItem(Item item) {
     	try {
     		inventory.remove(item);
-    	}
-    	catch (Exception e) {
+    	} catch (Exception e) {
     		System.out.println(Game.oops);
     		System.out.println("I tried to remove an item from the merchant's inventory!");
     	}
@@ -49,16 +48,26 @@ public class Merchant {
     }
     
     
-    public void trade(String choice) {
-    	switch(choice) {
-    		case "b":
-    			buy();
-    			break;
-    		case "s":
-    			sell();
-    			break;
-    		default:
-    			System.out.println("Not a valid response.\n");
+    public void trade() {
+    	while (true) {
+    		System.out.println("Would you like to (b)uy, (s)ell, or (c)ancel?\n");
+    		String choice = Game.in.nextLine();
+    		
+	    	switch(choice) {
+	    		case "c":
+	    			System.out.printf("You turn away from the %s and back to the room.%n%n", getName());
+	    			break;
+	    		case "b":
+	    			buy();
+	    			break;
+	    		case "s":
+	    			sell();
+	    			break;
+	    		default:
+	    			System.out.print(Game.no);
+	    			continue;
+	    	}
+	    	break;
     	}
     }
     
@@ -72,10 +81,13 @@ public class Merchant {
     		Item i = chooseItem("from merchant");
     		if (i == null) {
     			complete = true;
+    			System.out.printf("The %s thanks you for your patronage.%n%n", getName());
+    			break;
     		}
     		if (canBuy(i)) {
     			playerBuy(i);
     			complete = true;
+    			break;
     		}
     	}
     }
@@ -90,10 +102,13 @@ public class Merchant {
     		Item i = chooseItem("for merchant");
     		if (i == null) {
     			complete = true;
+    			System.out.printf("The %s thanks you for your patronage.%n%n", getName());
+    			break;
     		}
     		if (canSell(i)) {
     			playerSell(i);
     			complete = true;
+    			break;
     		}
     	}
     }
@@ -120,17 +135,22 @@ public class Merchant {
     	
     	switch(who) {
     		case "player":
-    			for (Item item : Game.player.inventory) {
+    			for (Item item : Game.player.sellingInventory) {
     				System.out.printf("%d. %s", ++i, item.getName());
     				displayInventory(item);
     			}
+    			System.out.println(Game.player.displayGold());
     			break;
     		case "merchant":
     			for (Item item : inventory) {
     				System.out.printf("%d. %s", ++i, item.getName());
     				displayInventory(item);
     			}
+    			System.out.println(Game.player.displayGold());
     			break;
+    		default:
+    			System.out.println(Game.oops);
+    			System.out.println("I'm pretty sure you won't see this oopsie in the inventoryPicker!");
     	}
     }
     
@@ -152,21 +172,20 @@ public class Merchant {
     private Item chooseItem(String who) {
     	System.out.println("Choose an item number or 0 to cancel.\n");
     	while(true) {
-			int choice = Integer.parseInt(Game.in.nextLine());
-			
-			if (choice == 0) {
-				return null;
-			}
-			
     		try {
+    			int choice = Integer.parseInt(Game.in.nextLine());
+			
+    			if (choice == 0) {
+    				return null;
+    			}
+			
     			switch(who) {
     				case "from merchant":
     					return getItem(choice);
     				case "for merchant":
     					return Game.player.getItem(choice);
     			}
-    		}
-    		catch (Exception e) {
+    		} catch (Exception e) {
     			System.out.println("Not a valid response.\n");
     		}
     	}
@@ -192,25 +211,35 @@ public class Merchant {
     
     
     private void playerBuy(Item item) {
-    	Game.player.setGold(-item.getValue());
-    	removeItem(item);
-    	Game.player.addItem(item);
-    	item.setValue(item.getValue()/2);
-    	System.out.printf("Added to inventory: %s%n", item.getName());
-    	System.out.printf("Gold remaining: %d%n", Game.player.getGold());
-    	System.out.printf("The %s thanks you for your patronage.%n", getName());
-    	System.out.println();
+    	try {
+    		Game.player.setGold(-item.getValue());
+    		removeItem(item);
+    		Game.player.addItem(item);
+    		item.setValue(item.getValue()/2);
+    		System.out.printf("Added to inventory: %s%n", item.getName());
+    		System.out.printf("Gold remaining: %d%n", Game.player.getGold());
+    		System.out.printf("The %s thanks you for your patronage.%n", getName());
+    		System.out.println();
+    	} catch (Exception e) {
+    		System.out.println(Game.oops);
+    		System.out.println("Buying error!/n");
+    	}
     }
     
     
     private void playerSell(Item item) {
-    	Game.player.setGold(item.getValue());
-    	Game.player.removeItem(item);
-    	addItem(item);
-    	item.setValue(item.getValue()*2);
-    	System.out.printf("Removed from inventory: %s%n", item.getName());
-    	System.out.printf("Gold: %d%n", Game.player.getGold());
-    	System.out.printf("The %s thanks you for your patronage.%n", getName());
-    	System.out.println();
+    	try {
+    		Game.player.setGold(item.getValue());
+    		Game.player.removeItem(item);
+    		addItem(item);
+    		item.setValue(item.getValue()*2);
+    		System.out.printf("Removed from inventory: %s%n", item.getName());
+    		System.out.printf("Gold: %d%n", Game.player.getGold());
+    		System.out.printf("The %s thanks you for your patronage.%n", getName());
+    		System.out.println();
+    	} catch (Exception e) {
+    		System.out.println(Game.oops);
+    		System.out.println("Selling error!/n");
+    	}
     }
 }

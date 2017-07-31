@@ -17,20 +17,19 @@ public class Saloon extends Room {
     
     
     public String enter() {
-    	if (!Game.player.won) {
+    	if (!Game.player.getWon()) {
     		System.out.println("You swing open the doors to the Dern Tootin' Saloon and step inside."
     		+ " A few patrons eye you warily; you're the 'New Kid in Town.'");
-    	}
-    	else {
+    	} else {
     		System.out.println("The Dern Tootin' Saloon is filled with a tangible sense of respect as you step inside. Everyone knows"
     		+ " not to mess with you.");
     	}
     	
     	System.out.println("A burly bartender stands at the far end of the room, ready for you to (b)uy a drink.\n"
-    		+ "There are many patrons here, both weak and strong, looking for a (f)ight.\n"
+    		+ "Many patrons here, from the spindly to the stacked, are looking for a (f)ight.\n"
     		+ "The exit back to the Town Square is to the (s)outh.\n");
     	
-    	if (!Game.player.won) {
+    	if (!Game.player.getWon()) {
     		System.out.println("If you're feeling up to it, you can take on the baddest (o)utlaw."
     		+ " If you win, you'll be the town's new force to be reckoned with!\n");
     	}
@@ -44,6 +43,7 @@ public class Saloon extends Room {
             
             if (Game.cons.contains(input)) {
             	Game.player.constants(input, index);
+            	return choice();
             }
             
             switch(input) {
@@ -51,13 +51,11 @@ public class Saloon extends Room {
             		look();
             		break;
             	case "f":
-            		game.enemySelection(input);
-            		break;
+            		return game.enemySelection(input);
             	case "o":
-            		if (!Game.player.won) {
+            		if (!Game.player.getWon()) {
             			game.enemySelection(input);
-            		}
-            		else {
+            		} else {
             			System.out.println(Game.no);
             		}
             	case "b":
@@ -73,6 +71,7 @@ public class Saloon extends Room {
             		System.out.println(Game.no);
             		break;
             }
+            return choice();
     	}
     }
             
@@ -82,15 +81,13 @@ public class Saloon extends Room {
     		System.out.println("You scramble around on the floor, looking for spare change.");
         	if (rand.nextInt(3) == 1) {
         		System.out.println("No gold here. Maybe there's some in that corner over there...\n");
-        	}
-        	else {
+        	} else {
         		int floorGold = (int)(Math.random() * 15 + 5);
                 System.out.println("Woohoo! You find " + floorGold + " gold lying on the ground.\n");
                 Game.player.setGold(floorGold);
                 looked++;
         	}
-    	}
-    	else {
+    	} else {
     		System.out.println("You've already found everything in here!\n");
     	}
     }
