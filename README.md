@@ -1,3 +1,5 @@
+##Totally unprofessional README below. Ye been warned.
+
 ## WesternTextAdventure
 A western adventure written in Java - a nice improvement from my previous games!
 
